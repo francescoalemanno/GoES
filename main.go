@@ -1,4 +1,42 @@
-// Package GoES implements an evolutionary algorithm
+/*
+This code implements a specific algorithm called CMA-ES (Covariance Matrix Adaptation Evolution Strategy) for optimization in Go. Here's a breakdown of what the code does:
+
+**Configuration:**
+
+* It defines a `Config` struct to hold various parameters for the optimization process.
+* A `Defaults` function provides default values for these configurations.
+
+**Function Optimization:**
+
+* The core function is `Opt`. It takes several arguments:
+  - `fn`: This is the function you want to optimize. It takes a list of floats as input and returns a single float representing the cost or fitness.
+  - `mu`: The initial mean vector for the population.
+  - `sigma`: The initial standard deviation vector for the population.
+  - `cfg`: The configuration object with parameters like number of generations and learning rate.
+
+* The function first calculates the population size based on the problem dimension.
+* It defines helper functions for sorting and sampling candidate solutions.
+* The main loop iterates for a specified number of generations:
+  - It performs Nesterov momentum update on the mean vector.
+  - It samples new candidate solutions based on the current mean and standard deviation.
+  - It evaluates the cost of each candidate solution using the provided function `fn`.
+  - It sorts the candidate solutions based on their cost (better solutions come first).
+  - It updates the mean and standard deviation vectors based on the weighted contributions of promising candidate solutions.
+  - It checks for convergence based on a minimum standard deviation threshold.
+  - Optionally, it prints information about the current generation and best solution so far.
+
+* Finally, the function returns the optimized mean (`mu`) and standard deviation (`sigma`) vectors.
+
+**Convenience Function:**
+
+* `DefaultOpt` is a wrapper function that uses `Defaults` to get a configuration and then calls `Opt` with some adjustments to the number of generations.
+
+**Helper Functions:**
+
+* `makeWeights` calculates weights for each candidate solution based on its rank in the population. This helps focus the search on promising regions.
+
+Overall, this code provides an implementation of CMA-ES for optimizing a black-box function in Go. It allows you to specify your own objective function and configure various parameters for the optimization process.
+*/
 package goes
 
 import (
