@@ -1,4 +1,4 @@
-**Package GoES**
+**Package GoES - [![Go Report Card](https://goreportcard.com/badge/github.com/francescoalemanno/GoES)](https://goreportcard.com/report/github.com/francescoalemanno/GoES)**
 
 **Overview**
 
