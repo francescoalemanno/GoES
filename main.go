@@ -40,7 +40,7 @@ Overall, this code provides an implementation of CMA-ES for optimizing a black-b
 package goes
 
 import (
-	"fmt"
+	"log"
 	"math"
 	"slices"
 
@@ -74,7 +74,7 @@ func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg Config) 
 	pop_n := cfg.PopSize
 	n := len(mu)
 	if len(sigma) != n {
-		panic("mu and sigma must have the same length.")
+		log.Panic("mu and sigma must have the same length.")
 	}
 	for pop_n*pop_n <= 144*n {
 		pop_n++
@@ -129,7 +129,7 @@ func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg Config) 
 			g_log_sigma[j] = 0
 		}
 		for i, p := range pop {
-			if W[i] < 0 {
+			if W[i] <= 0 {
 				break
 			}
 			for j := range n {
@@ -146,7 +146,7 @@ func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg Config) 
 			break
 		}
 		if cfg.Verbose {
-			fmt.Println(runs, mu, sigma, pop[pop_n/2].C)
+			log.Println("GoES: ", runs, mu, sigma, pop[pop_n/2].C)
 		}
 	}
 	return mu, sigma

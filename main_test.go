@@ -1,7 +1,10 @@
 package goes
 
 import (
+	"bytes"
+	"log"
 	"math"
+	"strings"
 	"testing"
 )
 
@@ -46,4 +49,34 @@ func TestBi(t *testing.T) {
 	if err > 1e-6 {
 		t.Error("got: ", mu, sig, " wanted:", muw, " error:", err)
 	}
+}
+
+func TestVerbose(t *testing.T) {
+	cfg := Defaults()
+	buf := bytes.NewBuffer([]byte{})
+	log.SetOutput(buf)
+	cfg.Verbose = true
+	cfg.Generations = 10
+	Opt(func(f []float64) float64 {
+		return 0.0
+	}, []float64{0.0, 0.0}, []float64{1.0, 1.0}, cfg)
+	str := buf.String()
+	if strings.Count(str, "GoES:") != cfg.Generations {
+		t.Error(str)
+	}
+}
+
+func TestPanic(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+
+	// The following is the code under test for panicking
+	DefaultOpt(
+		func(f []float64) float64 { return 0.0 },
+		[]float64{0.0, 0.0},
+		[]float64{1.0}, // here there is a missing element
+	)
 }
