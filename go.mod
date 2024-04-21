@@ -1,4 +1,4 @@
-module GoES
+module github.com/francescoalemanno/GoES
 
 go 1.22.0
 

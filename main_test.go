@@ -9,26 +9,26 @@ func abs2(x float64) float64 {
 	return x * x
 }
 
-func newFunction(ince float64, iva_detratta float64) float64 {
+func cost_test(ince float64, iva_detratta float64) float64 {
 	ince_l := ince / (1 - 1.22/100)
-	parte_incentivata := 0.65
+	perc_pay := 0.65
 	cost := func(x []float64) float64 {
 		pc := x[0]
 		fatt := pc + ince
 		impo := fatt / iva_detratta
-		pen := impo*parte_incentivata - ince_l
+		pen := impo*perc_pay - ince_l
 		return abs2(pen)
 	}
 	mu, _ := DefaultOpt(cost, []float64{2 * ince}, []float64{ince / 10})
 	return mu[0]
 }
 
-func TestIncentivi(t *testing.T) {
-	incentivi := []float64{1010.22, 1010.22, 1106.73, 2020.44}
+func TestUni(t *testing.T) {
+	money_inc := []float64{1010.22, 1010.22, 1106.73, 2020.44}
 	perc := []float64{1.0, 1.1, 1.22, 1.0}
 	wants := []float64{563.15985, 720.49783, 996.17249, 1126.31970}
-	for i := range incentivi {
-		got := newFunction(incentivi[i], perc[i])
+	for i := range money_inc {
+		got := cost_test(money_inc[i], perc[i])
 		want := wants[i]
 		err := math.Abs(got - want)
 		if err > 1e-5 {

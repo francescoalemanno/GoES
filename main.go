@@ -1,3 +1,4 @@
+// Package GoES implements an evolutionary algorithm
 package goes
 
 import (
