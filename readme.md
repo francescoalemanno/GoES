@@ -19,6 +19,7 @@ The `GoES` package implements an Evolutionary Algorithm (EA) for optimization pr
    * `fn`: A user-defined function representing the objective function to be optimized. This function should accept a slice of `float64` values as input and return a single `float64` value representing the cost or fitness of the solution.
     * `mu`: An initial mean vector of `float64` values, defining the starting point of the search in the solution space.
     * `sigma`: An initial standard deviation vector of `float64` values, determining the initial search radius around the mean vector.
+
 **Configuration**
 
 The `Config` struct allows fine-tuning the optimization process:
@@ -29,6 +30,7 @@ The `Config` struct allows fine-tuning the optimization process:
 * `LR_sigma`: Learning rate for standard deviation vector update (default: 0.15).
 * `Momentum`: Momentum coefficient for velocity update (default: 0.93).
 * `SigmaTol`: Tolerance threshold for stopping the optimization (default: 1e-12).
+* `Seed`: A uint64 value to seed the optimiser rng.
 * `Verbose`: Flag to enable detailed logging of optimization progress during each generation (default: false).
 
 **Usage Examples**
