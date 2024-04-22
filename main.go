@@ -51,6 +51,7 @@ type opt_config struct {
 	LR_sigma    float64
 	Momentum    float64
 	SigmaTol    float64
+	DeltaFnTol  float64
 	Verbose     bool
 	Seed        uint64
 }
@@ -63,6 +64,7 @@ func Config() opt_config {
 	cfg.LR_sigma = 0.15
 	cfg.Momentum = 0.75
 	cfg.SigmaTol = 1e-14
+	cfg.DeltaFnTol = 1e-14
 	cfg.Verbose = false
 	cfg.Seed = 798371291237
 	return cfg
@@ -149,7 +151,10 @@ func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg opt_conf
 			mu[j] += v[j]
 			sigma[j] *= math.Exp(cfg.LR_sigma * g_log_sigma[j])
 		}
-		if slices.Max(sigma) < cfg.SigmaTol {
+		if slices.Max(sigma) <= cfg.SigmaTol || math.Abs(pop[0].C-pop[pop_n-1].C) <= cfg.DeltaFnTol {
+			if cfg.Verbose {
+				log.Println("END OPT: Convergence reached.")
+			}
 			break
 		}
 		if cfg.Verbose {

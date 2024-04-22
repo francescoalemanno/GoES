@@ -22,7 +22,8 @@ The **`Config()` function:** returns a struct that allows fine-tuning the optimi
 * `LR_mu`: Learning rate for mean vector update (default: 0.6).
 * `LR_sigma`: Learning rate for standard deviation vector update (default: 0.15).
 * `Momentum`: Momentum coefficient for velocity update (default: 0.93).
-* `SigmaTol`: Tolerance threshold for stopping the optimization (default: 1e-12).
+* `SigmaTol`: Tolerance threshold on parameter variance for stopping the optimization (default: 1e-14).
+* `DeltaFnTol`: Tolerance threshold on cost function variance for stopping the optimization (default: 1e-14).
 * `Seed`: A uint64 value to seed the optimiser rng.
 * `Verbose`: Flag to enable detailed logging of optimization progress during each generation (default: false).
 

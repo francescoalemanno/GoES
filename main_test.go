@@ -78,11 +78,16 @@ func TestVerbose(t *testing.T) {
 	log.SetOutput(buf)
 	cfg.Verbose = true
 	cfg.Generations = 10
+	//Run it for few generations with a cost function to test for iteration verbosity
+	Opt(func(f []float64) float64 {
+		return Probability(f[0])
+	}, []float64{0.0, 0.0}, []float64{1.0, 1.0}, cfg)
+	//run it with a constant cost to hit convergence verbosity
 	Opt(func(f []float64) float64 {
 		return 0.0
 	}, []float64{0.0, 0.0}, []float64{1.0, 1.0}, cfg)
 	str := buf.String()
-	if strings.Count(str, "GoES:") != cfg.Generations {
+	if strings.Count(str, "GoES:") != cfg.Generations || strings.Count(str, "END OPT:") != 1 {
 		t.Error(str)
 	}
 }
