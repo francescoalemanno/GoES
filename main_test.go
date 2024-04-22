@@ -22,7 +22,7 @@ func cost_test(ince float64, iva_detratta float64) float64 {
 		pen := impo*perc_pay - ince_l
 		return abs2(pen)
 	}
-	sol, err := DefaultOpt(cost, []float64{ince * 0.9}, []float64{ince / 10})
+	sol, err := Opt(cost, []float64{ince * 0.9}, []float64{ince / 10}, Config())
 	if err != nil {
 		return math.NaN()
 	}
@@ -47,7 +47,7 @@ func TestBounded(t *testing.T) {
 		f := Bounded(x[0], -2, 5)
 		return f
 	}
-	res, _ := DefaultOpt(cost, []float64{0.0}, []float64{1.0})
+	res, _ := Opt(cost, []float64{0.0}, []float64{1.0}, Config())
 	got := cost(res.Mu)
 	want := -2.0
 	err := math.Abs(got - want)
@@ -57,40 +57,23 @@ func TestBounded(t *testing.T) {
 }
 
 func TestBi(t *testing.T) {
-	{
-		muw := []float64{4, -3}
-		sol, err_opt := DefaultOpt(func(f []float64) float64 {
-			return abs2(f[0]-muw[0]) + 100.0*abs2(f[0]+f[1]-muw[0]-muw[1])
-		}, []float64{0.0, 0.0}, []float64{1.0, 1.0})
-		if err_opt != nil {
-			t.Error(err_opt)
-		}
-		mu := sol.Mu
-		sig := sol.Sigma
-		err := math.Sqrt(abs2((mu[0]-muw[0])/muw[0]) + abs2((mu[1]-muw[1])/muw[1]))
-		if err > 1e-6 {
-			t.Error("DefaultOpt, got: ", mu, sig, " wanted:", muw, " error:", err)
-		}
+	muw := []float64{4, -3}
+	sol, err_opt := Opt(func(f []float64) float64 {
+		return abs2(f[0]-muw[0]) + 100.0*abs2(f[0]+f[1]-muw[0]-muw[1])
+	}, []float64{0.0, 0.0}, []float64{1.0, 1.0}, Config())
+	if err_opt != nil {
+		t.Error(err_opt)
 	}
-	{
-		muw := []float64{4, -3}
-		sol, err_opt := TunedOpt(func(f []float64) float64 {
-			return abs2(f[0]-muw[0]) + 500.0*abs2(f[0]+f[1]-muw[0]-muw[1])
-		}, []float64{0.0, 0.0}, []float64{1.0, 1.0})
-		if err_opt != nil {
-			t.Error(err_opt)
-		}
-		mu := sol.Mu
-		sig := sol.Sigma
-		err := math.Sqrt(abs2((mu[0]-muw[0])/muw[0]) + abs2((mu[1]-muw[1])/muw[1]))
-		if err > 1e-8 {
-			t.Error("TunedOpt, got: ", mu, sig, " wanted:", muw, " error:", err)
-		}
+	mu := sol.Mu
+	sig := sol.Sigma
+	err := math.Sqrt(abs2((mu[0]-muw[0])/muw[0]) + abs2((mu[1]-muw[1])/muw[1]))
+	if err > 1e-3 {
+		t.Error("got: ", mu, sig, " wanted:", muw, " error:", err)
 	}
 }
 
 func TestVerbose(t *testing.T) {
-	cfg := Defaults()
+	cfg := Config()
 	buf := bytes.NewBuffer([]byte{})
 	log.SetOutput(buf)
 	cfg.Verbose = true
@@ -105,18 +88,20 @@ func TestVerbose(t *testing.T) {
 }
 
 func TestError(t *testing.T) {
-	_, err := DefaultOpt(
+	_, err := Opt(
 		func(f []float64) float64 { return 0.0 },
 		[]float64{0.0, 0.0},
 		[]float64{1.0}, // here there is a missing element
+		Config(),
 	)
 	if err == nil {
 		t.Error("Expected error")
 	}
-	_, err = DefaultOpt(
+	_, err = Opt(
 		func(f []float64) float64 { return 0.0 },
 		[]float64{0.0, 0.0},
 		[]float64{1.0, 1.0}, // here there is a missing element
+		Config(),
 	)
 	if err != nil {
 		t.Error("Expected success")

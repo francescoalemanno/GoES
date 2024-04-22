@@ -24,7 +24,7 @@ func main() {
 	}
 
 	// Optionally customize configuration
-	cfg := GoES.Defaults()
+	cfg := GoES.Config()
 	cfg.Generations = 1000
 	cfg.Verbose = false
 

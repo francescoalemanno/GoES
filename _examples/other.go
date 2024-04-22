@@ -18,7 +18,7 @@ func main() {
 	mu := []float64{1.0, 2.0}    // Initial mean vector
 	sigma := []float64{0.5, 0.5} // Initial standard deviation vector
 
-	res, _ := GoES.DefaultOpt(myCustomFunction, mu, sigma)
+	res, _ := GoES.Opt(myCustomFunction, mu, sigma, GoES.Config())
 
 	fmt.Println("Optimized mean:", res.Mu)
 	fmt.Println("Optimized standard deviation:", res.Sigma)

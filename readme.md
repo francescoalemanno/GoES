@@ -6,23 +6,16 @@ The `GoES` package implements an Evolutionary Algorithm (EA) for optimization pr
 
 **Functionality**
 
-* **`Opt` function:** This core function performs the CMA-ES optimization. It takes the following arguments:
-    * `fn`: A user-defined function representing the objective function to be optimized. This function should accept a slice of `float64` values as input and return a single `float64` value representing the cost or fitness of the solution.
-    * `mu`: An initial mean vector of `float64` values, defining the starting point of the search in the solution space.
-    * `sigma`: An initial standard deviation vector of `float64` values, determining the initial search radius around the mean vector.
-    * `cfg` (optional): A configuration object of type `Config` (see below) to customize optimization parameters.
-* **`DefaultOpt` function:** This convenience function calls `Opt` with default configuration values suitable for many common optimization problems.
-   * `fn`: A user-defined function representing the objective function to be optimized. This function should accept a slice of `float64` values as input and return a single `float64` value representing the cost or fitness of the solution.
-    * `mu`: An initial mean vector of `float64` values, defining the starting point of the search in the solution space.
-    * `sigma`: An initial standard deviation vector of `float64` values, determining the initial search radius around the mean vector.
-* **`TunedOpt` function:** This convenience function calls `Opt` with a configuration which is tuned according to the user cost-function. Running this tuned optimised is more expensive than using `Opt` directly but it may lead to better results.
-   * `fn`: A user-defined function representing the objective function to be optimized. This function should accept a slice of `float64` values as input and return a single `float64` value representing the cost or fitness of the solution.
-    * `mu`: An initial mean vector of `float64` values, defining the starting point of the search in the solution space.
-    * `sigma`: An initial standard deviation vector of `float64` values, determining the initial search radius around the mean vector.
+**`Opt` function:** This core function performs the CMA-ES optimization. It takes the following arguments:
+
+* `fn`: A user-defined function representing the objective function to be optimized. This function should accept a slice of `float64` values as input and return a single `float64` value representing the cost or fitness of the solution.
+* `mu`: An initial mean vector of `float64` values, defining the starting point of the search in the solution space.
+* `sigma`: An initial standard deviation vector of `float64` values, determining the initial search radius around the mean vector.
+* `cfg` (optional): A configuration object of type `Config` (see below) to customize optimization parameters.
 
 **Configuration**
 
-The `Config` struct allows fine-tuning the optimization process:
+The **`Config()` function:** returns a struct that allows fine-tuning the optimization process, it has the following paramets:
 
 * `Generations`: The maximum number of generations for the EA to run (default: 300).
 * `PopSize`: The population size (number of candidate solutions) per generation (default: automatically determined based on problem dimensionality).
@@ -66,7 +59,7 @@ func main() {
 	}
 
 	// Optionally customize configuration
-	cfg := GoES.Defaults()
+	cfg := GoES.Config()
 	cfg.Generations = 1000
 	cfg.Verbose = false
 
@@ -102,9 +95,54 @@ func main() {
 	mu := []float64{1.0, 2.0}    // Initial mean vector
 	sigma := []float64{0.5, 0.5} // Initial standard deviation vector
 
-	res, _ := GoES.DefaultOpt(myCustomFunction, mu, sigma)
+	res, _ := GoES.Opt(myCustomFunction, mu, sigma, GoES.Config())
 
 	fmt.Println("Optimized mean:", res.Mu)
 	fmt.Println("Optimized standard deviation:", res.Sigma)
+}
+```
+
+**Example 3: Stochastic function optimization**
+
+This example demonstrates how to use `GoES` to optimize a stochastic function:
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+
+	GoES "github.com/francescoalemanno/GoES"
+)
+
+func abs2(x float64) float64 {
+	return x * x
+}
+func myCustomFunction(x []float64) float64 {
+	p := GoES.Probability(x[0])
+	tot_runs := 110
+	h := 0.0
+	for _ = range tot_runs {
+		if rand.Float64() < p {
+			h += 1
+		}
+	}
+	return abs2(h/float64(tot_runs) - 50.0/110.0)
+}
+
+func main() {
+	mu := []float64{0}    // Initial mean vector
+	sigma := []float64{1} // Initial standard deviation vector
+	cfg := GoES.Config()
+	cfg.Verbose = true
+	cfg.Momentum = 0
+	cfg.LR_mu = 1.0
+	cfg.LR_sigma = 1.0
+	cfg.PopSize = 200
+	cfg.Generations = 200
+	res, _ := GoES.Opt(myCustomFunction, mu, sigma, cfg)
+	fmt.Println("Optimized mean:", GoES.Probability(res.Mu[0]))
+	fmt.Println("MLE:", 50.0/110.0)
 }
 ```

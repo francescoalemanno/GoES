@@ -3,8 +3,8 @@ This code implements a specific algorithm called CMA-ES (Covariance Matrix Adapt
 
 **Configuration:**
 
-* It defines a `Config` struct to hold various parameters for the optimization process.
-* A `Defaults` function provides default values for these configurations.
+* It defines a `opt_config` struct to hold various parameters for the optimization process.
+* A `Config()` function provides default values for these configurations and materialised the private struct.
 
 **Function Optimization:**
 
@@ -48,7 +48,7 @@ import (
 	rand "golang.org/x/exp/rand"
 )
 
-type Config struct {
+type opt_config struct {
 	Generations int
 	PopSize     int
 	LR_mu       float64
@@ -59,31 +59,31 @@ type Config struct {
 	Seed        uint64
 }
 
-func Defaults() Config {
-	cfg := Config{}
+func Config() opt_config {
+	cfg := opt_config{}
 	cfg.Generations = 300
 	cfg.PopSize = 0
-	cfg.LR_mu = 0.6
+	cfg.LR_mu = 1.0
 	cfg.LR_sigma = 0.15
-	cfg.Momentum = 0.93
+	cfg.Momentum = 0.75
 	cfg.SigmaTol = 1e-14
 	cfg.Verbose = false
 	cfg.Seed = 798371291237
 	return cfg
 }
 
-type Result struct {
+type opt_result struct {
 	Mu    []float64
 	Sigma []float64
 }
 
 const const_Ez0 = 0.7978845608028661 // mean(abs(randn()))
-func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg Config) (Result, error) {
+func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg opt_config) (opt_result, error) {
 	rng := rand.New(rand.NewSource(cfg.Seed))
 	pop_n := cfg.PopSize
 	n := len(mu)
 	if len(sigma) != n {
-		return Result{}, fmt.Errorf("mu (len %d) and sigma (len %d) must have the same length", len(mu), len(sigma))
+		return opt_result{}, fmt.Errorf("mu (len %d) and sigma (len %d) must have the same length", len(mu), len(sigma))
 	}
 	for pop_n*pop_n <= 144*n {
 		pop_n++
@@ -159,33 +159,7 @@ func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg Config) 
 			log.Println("GoES: ", runs, mu, sigma, pop[pop_n/2].C)
 		}
 	}
-	return Result{Mu: mu, Sigma: sigma}, nil
-}
-
-func DefaultOpt(fn func([]float64) float64, mu []float64, sigma []float64) (Result, error) {
-	cfg := Defaults()
-	cfg.Generations = int(math.Ceil(math.Sqrt(float64(len(mu)*2+1)) * 300))
-	return Opt(fn, mu, sigma, cfg)
-}
-
-func TunedOpt(fn func([]float64) float64, mu []float64, sigma []float64) (Result, error) {
-	max_gen := int(math.Ceil(math.Sqrt(float64(len(mu)*2+1)) * 1500))
-	tuned, _ := DefaultOpt(func(f []float64) float64 {
-		cfg := Defaults()
-		cfg.Generations = max_gen / 50
-		cfg.LR_mu = Probability(f[0])
-		cfg.LR_sigma = Probability(f[1])
-		cfg.Momentum = Probability(f[2])
-		res, _ := Opt(fn, mu, sigma, cfg)
-		return fn(res.Mu)
-	}, []float64{3, -3, -3}, []float64{0.5, 0.5, 0.5})
-
-	cfg := Defaults()
-	cfg.LR_mu = Probability(tuned.Mu[0])
-	cfg.LR_sigma = Probability(tuned.Mu[1])
-	cfg.Momentum = Probability(tuned.Mu[2])
-	cfg.Generations = max_gen
-	return Opt(fn, mu, sigma, cfg)
+	return opt_result{Mu: mu, Sigma: sigma}, nil
 }
 
 func makeWeights(pop_size int) []float64 {
