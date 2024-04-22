@@ -27,10 +27,6 @@ This code implements a specific algorithm called CMA-ES (Covariance Matrix Adapt
 
 * Finally, the function returns the optimized mean (`mu`) and standard deviation (`sigma`) vectors.
 
-**Convenience Function:**
-
-* `DefaultOpt` is a wrapper function that uses `Defaults` to get a configuration and then calls `Opt` with some adjustments to the number of generations.
-
 **Helper Functions:**
 
 * `makeWeights` calculates weights for each candidate solution based on its rank in the population. This helps focus the search on promising regions.

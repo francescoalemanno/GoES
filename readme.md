@@ -11,7 +11,7 @@ The `GoES` package implements an Evolutionary Algorithm (EA) for optimization pr
 * `fn`: A user-defined function representing the objective function to be optimized. This function should accept a slice of `float64` values as input and return a single `float64` value representing the cost or fitness of the solution.
 * `mu`: An initial mean vector of `float64` values, defining the starting point of the search in the solution space.
 * `sigma`: An initial standard deviation vector of `float64` values, determining the initial search radius around the mean vector.
-* `cfg` (optional): A configuration object of type `Config` (see below) to customize optimization parameters.
+* `cfg`: A configuration object, can be obtained by `Config()` function to customize optimization parameters (see below).
 
 **Configuration**
 
