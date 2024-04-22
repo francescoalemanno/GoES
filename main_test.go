@@ -1,4 +1,4 @@
-package goes
+package GoES
 
 import (
 	"bytes"
@@ -22,8 +22,11 @@ func cost_test(ince float64, iva_detratta float64) float64 {
 		pen := impo*perc_pay - ince_l
 		return abs2(pen)
 	}
-	mu, _ := DefaultOpt(cost, []float64{2 * ince}, []float64{ince / 10})
-	return mu[0]
+	sol, err := DefaultOpt(cost, []float64{ince * 0.9}, []float64{ince / 10})
+	if err != nil {
+		return math.NaN()
+	}
+	return sol.Mu[0]
 }
 
 func TestUni(t *testing.T) {
@@ -42,9 +45,14 @@ func TestUni(t *testing.T) {
 
 func TestBi(t *testing.T) {
 	muw := []float64{4, -3}
-	mu, sig := DefaultOpt(func(f []float64) float64 {
+	sol, err_opt := DefaultOpt(func(f []float64) float64 {
 		return abs2(f[0]-muw[0]) + 100.0*abs2(f[0]+f[1]-muw[0]-muw[1])
 	}, []float64{0.0, 0.0}, []float64{1.0, 1.0})
+	if err_opt != nil {
+		t.Error(err_opt)
+	}
+	mu := sol.Mu
+	sig := sol.Sigma
 	err := math.Sqrt(abs2((mu[0]-muw[0])/muw[0]) + abs2((mu[1]-muw[1])/muw[1]))
 	if err > 1e-6 {
 		t.Error("got: ", mu, sig, " wanted:", muw, " error:", err)
@@ -66,17 +74,21 @@ func TestVerbose(t *testing.T) {
 	}
 }
 
-func TestPanic(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
-		}
-	}()
-
-	// The following is the code under test for panicking
-	DefaultOpt(
+func TestError(t *testing.T) {
+	_, err := DefaultOpt(
 		func(f []float64) float64 { return 0.0 },
 		[]float64{0.0, 0.0},
 		[]float64{1.0}, // here there is a missing element
 	)
+	if err == nil {
+		t.Error("Expected error")
+	}
+	_, err = DefaultOpt(
+		func(f []float64) float64 { return 0.0 },
+		[]float64{0.0, 0.0},
+		[]float64{1.0, 1.0}, // here there is a missing element
+	)
+	if err != nil {
+		t.Error("Expected success")
+	}
 }

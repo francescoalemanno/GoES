@@ -66,11 +66,10 @@ func main() {
 	cfg.Verbose = false
 
 	// Perform optimization
-	optimizedMu, _ := GoES.Opt(sphere, mu, sigma, cfg)
+	res, _ := GoES.Opt(sphere, mu, sigma, cfg)
 
-	fmt.Println("Optimum:", optimizedMu) // should be close to vector [0, 1, 2, ..., dim-1]
+	fmt.Println("Optimum:", res.Mu) // should be close to vector [0, 1, 2, ..., dim-1]
 }
-
 ```
 
 **Example 2: Default Optimization Config**
@@ -98,9 +97,9 @@ func main() {
 	mu := []float64{1.0, 2.0}    // Initial mean vector
 	sigma := []float64{0.5, 0.5} // Initial standard deviation vector
 
-	optimizedMu, optimizedSigma := GoES.DefaultOpt(myCustomFunction, mu, sigma)
+	res, _ := GoES.DefaultOpt(myCustomFunction, mu, sigma)
 
-	fmt.Println("Optimized mean:", optimizedMu)
-	fmt.Println("Optimized standard deviation:", optimizedSigma)
+	fmt.Println("Optimized mean:", res.Mu)
+	fmt.Println("Optimized standard deviation:", res.Sigma)
 }
 ```

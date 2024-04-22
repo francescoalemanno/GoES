@@ -29,7 +29,7 @@ func main() {
 	cfg.Verbose = false
 
 	// Perform optimization
-	optimizedMu, _ := GoES.Opt(sphere, mu, sigma, cfg)
+	res, _ := GoES.Opt(sphere, mu, sigma, cfg)
 
-	fmt.Println("Optimum:", optimizedMu) // should be close to vector [0, 1, 2, ..., dim-1]
+	fmt.Println("Optimum:", res.Mu) // should be close to vector [0, 1, 2, ..., dim-1]
 }

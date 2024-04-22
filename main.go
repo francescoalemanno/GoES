@@ -37,9 +37,10 @@ This code implements a specific algorithm called CMA-ES (Covariance Matrix Adapt
 
 Overall, this code provides an implementation of CMA-ES for optimizing a black-box function in Go. It allows you to specify your own objective function and configure various parameters for the optimization process.
 */
-package goes
+package GoES
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"slices"
@@ -69,12 +70,17 @@ func Defaults() Config {
 	return cfg
 }
 
+type Result struct {
+	Mu    []float64
+	Sigma []float64
+}
+
 const const_Ez0 = 0.7978845608028661 // mean(abs(randn()))
-func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg Config) ([]float64, []float64) {
+func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg Config) (Result, error) {
 	pop_n := cfg.PopSize
 	n := len(mu)
 	if len(sigma) != n {
-		log.Panic("mu and sigma must have the same length.")
+		return Result{}, fmt.Errorf("mu (len %d) and sigma (len %d) must have the same length", len(mu), len(sigma))
 	}
 	for pop_n*pop_n <= 144*n {
 		pop_n++
@@ -149,10 +155,10 @@ func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg Config) 
 			log.Println("GoES: ", runs, mu, sigma, pop[pop_n/2].C)
 		}
 	}
-	return mu, sigma
+	return Result{Mu: mu, Sigma: sigma}, nil
 }
 
-func DefaultOpt(fn func([]float64) float64, mu []float64, sigma []float64) ([]float64, []float64) {
+func DefaultOpt(fn func([]float64) float64, mu []float64, sigma []float64) (Result, error) {
 	cfg := Defaults()
 	cfg.Generations = int(math.Ceil(math.Sqrt(float64(len(mu)*2+1)) * 300))
 	return Opt(fn, mu, sigma, cfg)
@@ -173,4 +179,20 @@ func makeWeights(pop_size int) []float64 {
 		W[i] /= sumW
 	}
 	return W
+}
+
+func Positive(z float64) float64 {
+	if z < 0 {
+		return 1 / (1 - z)
+	}
+	return z + 1
+}
+
+func Probability(z float64) float64 {
+	p := Positive(z)
+	return p / (1 + p)
+}
+
+func Bounded(x, a, b float64) float64 {
+	return Probability(x)*(b-a) + a
 }
