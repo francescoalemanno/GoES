@@ -42,20 +42,50 @@ func TestUni(t *testing.T) {
 		}
 	}
 }
+func TestBounded(t *testing.T) {
+	cost := func(x []float64) float64 {
+		f := Bounded(x[0], -2, 5)
+		return f
+	}
+	res, _ := DefaultOpt(cost, []float64{0.0}, []float64{1.0})
+	got := cost(res.Mu)
+	want := -2.0
+	err := math.Abs(got - want)
+	if err > 1e-5 {
+		t.Errorf("got %.5f, wanted %.5f, err %.2g", got, want, err)
+	}
+}
 
 func TestBi(t *testing.T) {
-	muw := []float64{4, -3}
-	sol, err_opt := DefaultOpt(func(f []float64) float64 {
-		return abs2(f[0]-muw[0]) + 100.0*abs2(f[0]+f[1]-muw[0]-muw[1])
-	}, []float64{0.0, 0.0}, []float64{1.0, 1.0})
-	if err_opt != nil {
-		t.Error(err_opt)
+	{
+		muw := []float64{4, -3}
+		sol, err_opt := DefaultOpt(func(f []float64) float64 {
+			return abs2(f[0]-muw[0]) + 100.0*abs2(f[0]+f[1]-muw[0]-muw[1])
+		}, []float64{0.0, 0.0}, []float64{1.0, 1.0})
+		if err_opt != nil {
+			t.Error(err_opt)
+		}
+		mu := sol.Mu
+		sig := sol.Sigma
+		err := math.Sqrt(abs2((mu[0]-muw[0])/muw[0]) + abs2((mu[1]-muw[1])/muw[1]))
+		if err > 1e-6 {
+			t.Error("DefaultOpt, got: ", mu, sig, " wanted:", muw, " error:", err)
+		}
 	}
-	mu := sol.Mu
-	sig := sol.Sigma
-	err := math.Sqrt(abs2((mu[0]-muw[0])/muw[0]) + abs2((mu[1]-muw[1])/muw[1]))
-	if err > 1e-6 {
-		t.Error("got: ", mu, sig, " wanted:", muw, " error:", err)
+	{
+		muw := []float64{4, -3}
+		sol, err_opt := TunedOpt(func(f []float64) float64 {
+			return abs2(f[0]-muw[0]) + 500.0*abs2(f[0]+f[1]-muw[0]-muw[1])
+		}, []float64{0.0, 0.0}, []float64{1.0, 1.0})
+		if err_opt != nil {
+			t.Error(err_opt)
+		}
+		mu := sol.Mu
+		sig := sol.Sigma
+		err := math.Sqrt(abs2((mu[0]-muw[0])/muw[0]) + abs2((mu[1]-muw[1])/muw[1]))
+		if err > 1e-8 {
+			t.Error("TunedOpt, got: ", mu, sig, " wanted:", muw, " error:", err)
+		}
 	}
 }
 

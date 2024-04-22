@@ -56,6 +56,7 @@ type Config struct {
 	Momentum    float64
 	SigmaTol    float64
 	Verbose     bool
+	Seed        uint64
 }
 
 func Defaults() Config {
@@ -65,8 +66,9 @@ func Defaults() Config {
 	cfg.LR_mu = 0.6
 	cfg.LR_sigma = 0.15
 	cfg.Momentum = 0.93
-	cfg.SigmaTol = 1e-12
+	cfg.SigmaTol = 1e-14
 	cfg.Verbose = false
+	cfg.Seed = 798371291237
 	return cfg
 }
 
@@ -77,6 +79,7 @@ type Result struct {
 
 const const_Ez0 = 0.7978845608028661 // mean(abs(randn()))
 func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg Config) (Result, error) {
+	rng := rand.New(rand.NewSource(cfg.Seed))
 	pop_n := cfg.PopSize
 	n := len(mu)
 	if len(sigma) != n {
@@ -105,7 +108,7 @@ func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg Config) 
 		trial := make([]float64, n)
 		for {
 			for i := range n {
-				z[i] = rand.NormFloat64()
+				z[i] = rng.NormFloat64()
 				trial[i] = z[i]*sd[i] + av[i]
 			}
 			cost := fn(trial)
@@ -134,6 +137,7 @@ func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg Config) 
 			g[j] = 0
 			g_log_sigma[j] = 0
 		}
+
 		for i, p := range pop {
 			if W[i] <= 0 {
 				break
@@ -163,6 +167,27 @@ func DefaultOpt(fn func([]float64) float64, mu []float64, sigma []float64) (Resu
 	cfg.Generations = int(math.Ceil(math.Sqrt(float64(len(mu)*2+1)) * 300))
 	return Opt(fn, mu, sigma, cfg)
 }
+
+func TunedOpt(fn func([]float64) float64, mu []float64, sigma []float64) (Result, error) {
+	max_gen := int(math.Ceil(math.Sqrt(float64(len(mu)*2+1)) * 1500))
+	tuned, _ := DefaultOpt(func(f []float64) float64 {
+		cfg := Defaults()
+		cfg.Generations = max_gen / 50
+		cfg.LR_mu = Probability(f[0])
+		cfg.LR_sigma = Probability(f[1])
+		cfg.Momentum = Probability(f[2])
+		res, _ := Opt(fn, mu, sigma, cfg)
+		return fn(res.Mu)
+	}, []float64{3, -3, -3}, []float64{0.5, 0.5, 0.5})
+
+	cfg := Defaults()
+	cfg.LR_mu = Probability(tuned.Mu[0])
+	cfg.LR_sigma = Probability(tuned.Mu[1])
+	cfg.Momentum = Probability(tuned.Mu[2])
+	cfg.Generations = max_gen
+	return Opt(fn, mu, sigma, cfg)
+}
+
 func makeWeights(pop_size int) []float64 {
 	W := make([]float64, pop_size)
 	for i := range pop_size {

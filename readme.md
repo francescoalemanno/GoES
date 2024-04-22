@@ -15,7 +15,10 @@ The `GoES` package implements an Evolutionary Algorithm (EA) for optimization pr
    * `fn`: A user-defined function representing the objective function to be optimized. This function should accept a slice of `float64` values as input and return a single `float64` value representing the cost or fitness of the solution.
     * `mu`: An initial mean vector of `float64` values, defining the starting point of the search in the solution space.
     * `sigma`: An initial standard deviation vector of `float64` values, determining the initial search radius around the mean vector.
-
+* **`TunedOpt` function:** This convenience function calls `Opt` with a configuration which is tuned according to the user cost-function. Running this tuned optimised is more expensive than using `Opt` directly but it may lead to better results.
+   * `fn`: A user-defined function representing the objective function to be optimized. This function should accept a slice of `float64` values as input and return a single `float64` value representing the cost or fitness of the solution.
+    * `mu`: An initial mean vector of `float64` values, defining the starting point of the search in the solution space.
+    * `sigma`: An initial standard deviation vector of `float64` values, determining the initial search radius around the mean vector.
 **Configuration**
 
 The `Config` struct allows fine-tuning the optimization process:
