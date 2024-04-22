@@ -73,6 +73,21 @@ type opt_result struct {
 	Sigma []float64
 }
 
+type opt_pair_z_cost struct {
+	Z []float64
+	C float64
+}
+
+func pair_z_cost_sortfn(a, b opt_pair_z_cost) int {
+	if a.C < b.C {
+		return -1
+	}
+	if a.C > b.C {
+		return 1
+	}
+	return 0
+}
+
 const const_Ez0 = 0.7978845608028661 // mean(abs(randn()))
 func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg opt_config) (opt_result, error) {
 	rng := rand.New(rand.NewSource(cfg.Seed))
@@ -85,21 +100,7 @@ func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg opt_conf
 		pop_n++
 	}
 
-	type Pair struct {
-		Z []float64
-		C float64
-	}
-	sortfn := func(a, b Pair) int {
-		if a.C < b.C {
-			return -1
-		}
-		if a.C > b.C {
-			return 1
-		}
-		return 0
-	}
-
-	sample := func(av, sd []float64) Pair {
+	sample := func(av, sd []float64) opt_pair_z_cost {
 		z := make([]float64, n)
 		trial := make([]float64, n)
 		for {
@@ -109,12 +110,12 @@ func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg opt_conf
 			}
 			cost := fn(trial)
 			if !math.IsInf(cost, 0) && !math.IsNaN(cost) {
-				return Pair{z, cost}
+				return opt_pair_z_cost{z, cost}
 			}
 		}
 	}
 	W := makeWeights(pop_n)
-	pop := make([]Pair, pop_n)
+	pop := make([]opt_pair_z_cost, pop_n)
 	g := make([]float64, n)
 	v := make([]float64, n)
 	g_log_sigma := make([]float64, n)
@@ -127,7 +128,7 @@ func Opt(fn func([]float64) float64, mu []float64, sigma []float64, cfg opt_conf
 		for j := range pop_n {
 			pop[j] = sample(nesterov_mu, sigma)
 		}
-		slices.SortFunc(pop, sortfn)
+		slices.SortFunc(pop, pair_z_cost_sortfn)
 
 		for j := range n {
 			g[j] = 0

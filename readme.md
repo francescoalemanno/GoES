@@ -26,6 +26,21 @@ The **`Config()` function:** returns a struct that allows fine-tuning the optimi
 * `Seed`: A uint64 value to seed the optimiser rng.
 * `Verbose`: Flag to enable detailed logging of optimization progress during each generation (default: false).
 
+## Convenience Function Documentation
+
+### Positive(z float64) float64
+
+* This function converts the potentially unbounded input `z` into a value between 0 and +Inf.
+
+### Probability(z float64) float64
+
+* This function converts the potentially unbounded input `z` into a valid probability value between 0 and 1.
+
+### Bounded(x, a, b float64) float64
+
+* This function takes a value `x` and a range defined by `a` (lower bound) and `b` (upper bound), and uses a probability value derived from `x` to position the output within that range.
+
+
 **Usage Examples**
 
 **Example 1: Sphere Function Optimization**
